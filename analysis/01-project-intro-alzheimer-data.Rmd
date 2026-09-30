@@ -17,7 +17,6 @@ Explore the data set by answering the following questions along with any other q
 1. Import the Alzheimer data. 
 ```{r}
 ad <- read_csv("../data/alzheimer_data.csv")
-
 ```
 
 
