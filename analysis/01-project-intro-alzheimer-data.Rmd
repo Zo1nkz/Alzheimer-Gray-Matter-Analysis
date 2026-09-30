@@ -1,5 +1,5 @@
 ---
-title: "Project: Getting to Know the Alzheimer Data (10 pts)"
+title: "Project: Getting to Know the Alzheimer Data"
 author: "Zachary Colinco"
 date: "02/11/26"
 output: html_document
@@ -16,7 +16,7 @@ Explore the data set by answering the following questions along with any other q
 
 1. Import the Alzheimer data. 
 ```{r}
-ad <- read_csv("alzheimer_data.csv")
+ad <- read_csv("../data/alzheimer_data.csv")
 
 ```
 

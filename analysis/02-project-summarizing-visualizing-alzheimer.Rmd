@@ -1,5 +1,5 @@
 ---
-title: "Project: Summarizing and Visualizing the Alzheimer Data (8 pts)"
+title: "Project: Summarizing and Visualizing the Alzheimer Data"
 author: "Zachary Colinco"
 date: "02/25/26"
 output: html_document
@@ -13,7 +13,7 @@ library(janitor)
 
 Save this file in your project folder inside your class folder. Import the Alzheimer data. 
 ```{r message = FALSE}
-alz <- read_csv("alzheimer_data.csv")
+alz <- read_csv("../data/alzheimer_data.csv")
 ```
 
 
