@@ -1,0 +1,78 @@
+---
+title: "Project: Getting to Know the Alzheimer Data (10 pts)"
+author: "Zachary Colinco"
+date: "02/11/26"
+output: html_document
+---
+
+
+```{r, message=FALSE}
+library(tidyverse)
+```
+
+In your Math 220 class folder, create a new folder called "Project". Save this file in the folder. Download the Alzheimer data set and the PDF presentation from our canvas class and save the files in the Project folder as well.  
+
+Explore the data set by answering the following questions along with any other questions you have. Use the PDF presentation to find more information about the data and its variables.
+
+1. Import the Alzheimer data. 
+```{r}
+ad <- read_csv("alzheimer_data.csv")
+
+```
+
+
+
+2. What is the population from which this data came from?
+    According to the NACC website, "There are more than 54,000 participants with data at NACC. Data has been collected from more than 40 Alzheimer's Disease Research Centers (ADRCs) over the last 25+ years..." so the population comprises of at least 54,000 participants across the 40 ADRCs.
+
+3. What is the sample and what is the sample size?
+
+```{r}
+### The sample would be the 2700 entries in our specific 'alzheimers_data.csv' file that was collected from the 54,000 total participants recorded in the NACC Alzheimer's dataset.
+```
+
+
+
+4. Display the first few rows of the data set. 
+```{r}
+head(ad)
+```
+
+
+
+5. How many observations are there in this data set?
+```{r}
+nrow(ad)
+```
+
+
+
+6. How many variables are there in this data set? 
+```{r}
+ncol(ad)
+```
+
+
+
+7. Name a few variables that are considered categorical?
+```{r}
+### APPSEV, EVENTS, CDRGLOB, FEMALE, and NACCGDS
+```
+
+
+
+8. Name a few variables that are considered numerical?
+```{r}
+### NACCICV, TRAILB, WEIGHT, TRAILA, and LHIPPO
+```
+
+
+
+9. Take a glimpse of the data and determine if the type for each variable was read correctly by R, if not then make a note of a few of them that would need to be reclassified and to what type of variable.
+```{r}
+glimpse(ad)
+```
+
+
+10. Further questions or comments. 
+    How often are entries updated for participants who return for a diagnosis?

@@ -1,0 +1,114 @@
+---
+title: "Project: Summarizing and Visualizing the Alzheimer Data (8 pts)"
+author: "Zachary Colinco"
+date: "02/25/26"
+output: html_document
+---
+
+
+```{r, message=FALSE}
+library(tidyverse)
+library(janitor)
+```
+
+Save this file in your project folder inside your class folder. Import the Alzheimer data. 
+```{r message = FALSE}
+alz <- read_csv("alzheimer_data.csv")
+```
+
+
+Consider the following objectives: 
+
+- Objective 1: Explore the association between the gender of a person and their diagnosis, while also considering other potential confounding variables that might impact this association. 
+
+- Objective 2: Compare various cognitive tests from the Behavioral Survey Data to MRI Measurement Data in terms of prediction accuracy in the diagnosis of Alzheimer’s disease.
+
+- Objective 3: Investigate the differences between the left or right parietal lobe cortical gray matter volume and the total frontal lobe cortical gray matter volume in the diagnosis of Alzheimer’s while controlling for other variables such as gender, age, and education.
+
+**1. Pick one objective. Consider the variables involved in your objective and classify them as categorical or numerical.**
+
+<center> Objective 3 </center>
+
+Numerical: parietal lobe gray matter volume (right), total total frontal lobe gray matter volume
+
+Categorical: Diagnosis, gender, age, education
+
+**2. Glimpse the data and determine if the variables in your objective were stored as the correct type by R. If not, then determine what is the best type of variable that you will need to change it to. **
+
+```{r}
+glimpse(alz)
+```
+<center> Objective 2 </center>
+
+No, because all the scores from the behavioral survey data use a scale to score each variable that can be categorized; is not continuous so they would be stored as a fct data type. Furthermore diagnosis should also be fct with only 3 categories used by the study.
+
+The MRI scores on the other hand are stored correctly as dbl, being a continuous variable that may cannot be categorized easily.
+
+<center> Objective 3 </center>
+
+Yes, because the cortical gray matter volumes are correctly stored as dbl. 
+
+The variables diagnosis, gender, age, and education are incorrectly stored as they should be fct. (pick one)
+
+**3. Summarize each variable individually. If the variable is categorical then use a relative frequency distribution. If the variable is numerical then find the mean, sd, and five-number summary. Write a sentence describing findings for each.** 
+
+```{r}
+tabyl(alz, female) 
+# Most of the participants are females with a frequency close to 58%
+tabyl(alz, age) 
+# Most participants fell into the or close to the senior citizen age range
+tabyl(alz, educ) 
+# The majority of participants had completed high school with a good number of participants also having spent an additional 4-years likely for their bachelor's degrees
+tabyl(alz, diagnosis)
+# more than half of the clinical data regarding the final diagnosis of participants had normal cognition
+```
+```{r}
+alz |>
+  summarize(
+    mean   = mean(lparcort, na.rm = TRUE),
+    median = median(lparcort, na.rm = TRUE),
+    sd     = sd(lparcort, na.rm = TRUE),
+    min    = quantile(lparcort, 0,    na.rm = TRUE),
+    q25    = quantile(lparcort, 0.25, na.rm = TRUE),
+    q50    = quantile(lparcort, 0.50, na.rm = TRUE),
+    q75    = quantile(lparcort, 0.75, na.rm = TRUE),
+    max    = quantile(lparcort, 1,    na.rm = TRUE)
+  )
+# The average amount of gray matter in the right parietal lobe was 47 cc's with an sd of 6 cc's
+
+alz |>
+  summarize(
+    mean = mean(frcort, na.rm = TRUE),
+    median = median(frcort, na.rm = TRUE),
+    sd = sd(frcort, na.rm = TRUE),
+    min = quantile(frcort, 0, na.rm = TRUE),
+    q25 = quantile(frcort, 0.25, na.rm = TRUE),
+    q50 = quantile(frcort, 0.50, na.rm = TRUE),
+    q75 = quantile(frcort, 0.75, na.rm = TRUE),
+    max = quantile(frcort, 1, na.rm = TRUE)
+  )
+
+# The average amount of gray matter in the frontal lobe was 170 cc's with an sd of 23 cc's
+```
+
+
+**4. Explore the variables individually by creating an appropriate graph for each and color them as desired. Write a couple of sentences for each graph to describe them and talk about anything that you can conclude from what you see. Use specific details (values) if possible.** 
+```{r}
+ggplot(data = alz, aes(x = age)) + geom_histogram(binwidth = 8, color = "black", fill = "#a4c2f4")
+# As noted before, most of the participants were much older, falling closer to  the 65-80 age range; skewed right
+ggplot(data = alz, aes(x = female)) + geom_bar(color = "black", fill = "#a4c2f4")
+# A decent amount of participants were females in the study
+ggplot(data = alz, aes(x = educ)) + geom_histogram(binwidth = 5, color = "black", fill = "#a4c2f4")
+# The large majority of participants had a post-secondary education with about 1200 participants having 13-15 years of education
+
+ggplot(data = alz, aes(x = frcort)) + geom_histogram(color = "black", fill = "#a4c2f4")
+# a very notable outlier in frontal lobe gray matter volume at around 300 cc's for one participant; the median falls close to 140 cc's. The distribution is essentially symmetric, forming a decent bell curve.
+
+ggplot(data = alz, aes(x = rparcort)) + geom_boxplot(color = "black", fill = "#a4c2f4")
+# a very notable outlier in right cortical lobe gray matter volume at around 10 cc's for one participant; the median falls close to about 48 cc's
+```
+
+
+5. Resources
+
+**paste any external resources here!**

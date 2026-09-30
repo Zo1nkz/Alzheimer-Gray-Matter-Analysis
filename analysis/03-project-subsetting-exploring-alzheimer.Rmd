@@ -1,0 +1,272 @@
+---
+title: "Project: Subsetting and Exploring the Alzheimer Data"
+author: "Zachary Colinco"
+date: "03/18/26"
+output: html_document
+---
+
+
+```{r, message=FALSE}
+library(tidyverse)
+library(janitor)
+library(broom)
+library(bayesrules)
+library(modelr)
+```
+
+Save this file in your project folder inside your class folder. Import the Alzheimer data. 
+```{r message = FALSE}
+alz <- read_csv("alzheimer_data.csv")
+```
+
+
+Consider the following objectives and corresponding variables and their types: 
+
+- Objective 1: Explore the association between the gender of a person and their diagnosis, while also considering other potential confounding variables that might impact this association. 
+
+gender:
+
+female (0 = not female, 1 = female) categorical, logical
+
+diagnosis:
+
+diagnosis (0 = normal cognition, 1 = mild cognitive impairment, 2 = dementia due to AD) categorical, factor
+
+potential confounding variables:
+
+age: Subject’s age (years) (18-120) numerical
+
+educ: Subject’s number of years of education (0-36), numerical
+
+
+- Objective 2: Compare various cognitive tests from the Behavioral Survey Data to MRI Measurement Data in terms of prediction accuracy in the diagnosis of Alzheimer’s disease.
+
+Behavioral Survey Data: 
+
+cdrglob: Global Clinical Dementia Rating (CDR) Score  (0.0 = No impairment, 0.5 = Questionable impairment, 1.0 = Mild impairment, 2.0 = Moderate impairment, 3.0 = Severe impairment) categorical, factor
+ 
+MRI Measurement Data:
+
+naccicv: Total intracranial volume (cc) numerical
+
+csfvol: Total brain cerebrospinal fluid volume (cc) numerical
+ 
+diagnosis: 
+
+diagnosis (0 = normal cognition, 1 = mild cognitive impairment, 2 = dementia due to AD) categorical, factor
+
+- Objective 3: Investigate the differences between the left or right parietal lobe cortical gray matter volume and the total frontal lobe cortical gray matter volume in the diagnosis of Alzheimer’s while controlling for gender and other variables such as age and education (pick one).
+
+
+Cortical gray matter:
+
+lparcort: Segmented left parietal lobe cortical gray matter volume (cc) numerical
+
+rparcort: Segmented right parietal lobe cortical gray matter volume (cc) numerical
+
+frcort: Segmented total frontal lobe cortical gray matter volume (cc) numerical
+
+diagnosis: 
+
+diagnosis (0 = normal cognition, 1 = mild cognitive impairment, 2 = dementia due to AD) categorical, factor
+
+
+female: (0 = not female, 1 = female) categorical, factor
+
+Other variables:
+
+age: Subject’s age (years) (18-120) numerical
+
+educ: Subject’s number of years of education (0-36), numerical
+
+**1. Pick one objective (preferably the one you chose for the previous activity) and subset the `alzheimer` data to include only the variables that relate to your Objective. Note that regardless of which objective you choose, make sure you keep the `id` variable to uniquely identify each observation. Save this new data frame under "alz1heimer1" or "alzheimer2" or "alzheimer3" depending on the objective you chose.**  
+
+```{r}
+# controlling for gender, age, educ
+alz3 <- alz |>
+  select("id", "frcort", "lparcort", "diagnosis", "female", "educ")
+glimpse(alz3)
+```
+
+
+**2. Consider the variables involved in your objective from your new data frame. Determine if you need to change the type of variable, say from numerical to factor, or if you need to create new variables. If you do so, make sure to save your changes to your data frame under the same name.** 
+
+```{r}
+alz3 <- alz3 |>
+  mutate(diagnosis = as.factor(diagnosis),
+         female = as.factor(female))
+glimpse(alz3)
+```
+
+**3. Create a new variable called "diagnose" using the existing diagnosis variable. Assign normal cognition to "Normal" and mild impairment and dementia due to AD to "Dementia". Save the new variable to your data frame.**
+
+```{r}
+alz3 <- alz3 |>
+  mutate(diagnose = case_when(
+    diagnosis == 0 ~ 'Normal',
+    diagnosis == 1 | diagnosis == 2 ~ 'Dementia'), .after = 2)
+glimpse(alz3)
+```
+
+
+**4. Find an appropriate numerical summary for each variable individually (skip diagnosis, as the new focus is the variable diagnose). Write a sentence or two to describe your findings.**
+
+```{r}
+alz3 |> 
+  summarize(mean(frcort), mean(lparcort), median(educ), sd(frcort), sd(lparcort), IQR(educ), min(frcort), max(frcort), min(lparcort), max(lparcort), quantile(educ, 0.75))
+
+alz3 |>
+  ggplot(aes(x = frcort)) + geom_histogram(color = "black", fill = "#a4c2f4") + labs(title = "Frontal Lobe Cortical Gray Matter Volume") + xlab('Volume (cc)') + ylab('Count')
+
+alz3 |>
+  ggplot(aes(x = lparcort)) + geom_histogram(color = "black", fill = "#a4c2f4") + labs(title = "Left Lobe Cortical Gray Matter Volume") + xlab('Volume (cc)') + ylab('Count')
+
+alz3 |>
+  ggplot(aes(x = educ)) + geom_boxplot(fill = "#a4c2f4") + labs(title = "Participants' Years of Education") + xlab('Years of Education') 
+
+alz3 |>
+  count(diagnose)
+
+alz3 |>
+  count(female)
+
+
+alz3 |> 
+  ggplot(aes(x = diagnose)) + geom_bar(color = "black", fill = "#a4c2f4") + labs(title = "Participants' Diagnoses") + xlab('Diagnose') + ylab('Count')
+
+#alz3 |> 
+#  ggplot(aes(x = female)) + geom_bar(color = "black", fill = "#a4c2f4") + labs(title = "Participants' Genders") + xlab('Female') + ylab('Count')
+
+```
+The majority of participants were female and were diagnosed with showing no signs of having dementia; the average showed most participants had least some post-secondary education. The frontal cortical grey matter was 170 cc with the left parietal cortical averaging 46 cc
+
+**5. Pair each variable with `diagnose` and create an appropriate numerical summary for each pairing. Describe your findings for each pairing. Write a sentence or two to describe your findings.** 
+
+```{r}
+alz3 |>
+  group_by(diagnose) |>
+    summarize(mean(frcort), mean(lparcort), mean(educ), sd(frcort), sd(lparcort))
+
+alz3 |>
+  group_by(diagnose) |>
+    summarize(median(frcort), IQR(frcort),)
+
+alz3 |>
+  group_by(diagnose) |>
+    summarize(median(lparcort), IQR(lparcort),)
+
+alz3 |>
+  group_by(diagnose) |>
+    summarize(median(educ), IQR(educ))
+```
+
+**6. Pair each variable with `diagnose` and create an appropriate graph for each pair. Add labels and color as desired. Add a title. Write a sentence or two to describe your findings for each graph.**
+
+```{r}
+alz3 |> 
+  ggplot(aes(x = diagnose, y = frcort)) + labs(title = 'Diagnosis vs. Frontal Cortical Lobe Gray Matter Volume (cc)') + geom_boxplot(fill = "#a4c2f4") + xlab('Diagnosis') + ylab('Volume (cc)')
+
+alz3 |> 
+  ggplot(aes(x = diagnose, y = lparcort)) + labs(title = 'Diagnosis vs. Left Parietal Cortical Lobe Gray Matter Volume (cc)') + geom_boxplot(fill = "#a4c2f4") + xlab('Diagnosis') + ylab('Volume (cc)')
+
+alz3 |> 
+  ggplot(aes(x = diagnose, y = educ)) + labs(title = 'Diagnosis vs. Education') + geom_boxplot(fill = "#a4c2f4") + xlab('Diagnosis') + ylab('Years of Education')
+
+```
+
+
+**7. Explore the variables in groups of 3 by creating appropriate numerical summaries or graphs. You are welcome to use filtering or grouping here. Describe your findings.** 
+
+```{r}
+
+alz3 |>
+  ggplot(aes(x = lparcort, y = frcort)) + geom_point() + 
+  facet_grid(cols = vars(diagnose)) +
+  labs(title = "Frontal vs. Left Parietal Gray Matter Volume by Diagnosis Education", x = "Left Parietal Volume (cc)", y = "Frontal Volume (cc)")
+
+```
+
+In these two sets of graphs split by sex (male and female), we can observe that the males should more frequent diagnosis of alzheimers compared to females as indicative too of the noticeable difference in average frontal and left parietal cortical grey matter volume. The level of education of the females was also higher than the males which could serve as a minor explanation for alzheimers disease.
+
+```{r}
+
+alz3 |>
+  ggplot(aes(x = lparcort, y = frcort, color = educ)) +
+  geom_point(alpha = 0.5) +
+  scale_color_viridis_c() +
+  facet_grid(cols = vars(diagnose)) +
+  labs(title = "Frontal vs. Left Parietal Volume by Diagnosis and Education",
+       x = "Left Parietal Volume (cc)",
+       y = "Frontal Volume (cc)",
+       color = "Years of Education")
+```
+
+**8. Site here any resources that you used, including PDF presentation and csv file. Use MLA if possible.**
+
+Ren, Y (2022) Data Analysis for Alzheimer’s Disease _Stark Lab and Shahbaba Group_
+
+csv file from: https://www.naccdata.org/about-nacc-data/data-summary-tables/
+
+
+
+**APA preferred**
+
+## Inferential Analysis
+
+```{r}
+t.test(frcort ~ diagnose, data = alz3)
+
+t.test(lparcort ~ diagnose, data = alz3)
+```
+
+```{r}
+alz3 <- alz3 |>
+  mutate(educ_group = case_when(
+    educ < 12 ~ "Less than HS",
+    educ < 16 ~ "HS to Some College",
+    TRUE ~ "Bachelor's or Higher"
+  ))
+alz3
+```
+
+
+```{r}
+cont_tbl <- table(alz3$educ_group, alz3$diagnose)
+addmargins(cont_tbl)
+
+chisq.test(cont_tbl, correct = FALSE)$expected
+prop.table(cont_tbl, margin = 1)
+
+chisq.test(cont_tbl, correct = FALSE)
+```
+
+## Regression Models
+
+```{r}
+#glimpse(alz3)
+alz4 <- alz3 |>
+  mutate(diagnose = diagnose == "Dementia") 
+  
+# example for residual comparison
+alz3 |>
+  filter(lparcort == 50)
+
+model_fr = lm(frcort ~ lparcort + educ + diagnose, data = alz4)
+model_fr
+glance(model_fr)$adj.r.squared
+rmse(model_fr, alz4)
+```
+
+```{r}
+#glimpse(alz3)
+#alz5 <- alz3 |>
+#  mutate(diagnose_binary = ifelse(diagnose == "Dementia", 1, 0))
+
+model_d = glm(diagnose ~ frcort + lparcort + educ, data = alz4, family = "binomial")
+model_d
+```
+
+```{r}
+exp(-0.34) / (1 + exp(-0.34))
+```
+
