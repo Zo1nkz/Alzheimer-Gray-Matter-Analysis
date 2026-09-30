@@ -47,3 +47,9 @@ po/*~
 
 # RStudio Connect folder
 rsconnect/
+
+# Knitted HTML output folders
+*_files/
+
+# macOS
+.DS_Store
